@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Role } from "../data/enums/Role";
 import ProtectedRoute from "../security/guards/ProtectedRoute";
