@@ -43,7 +43,12 @@ const LeadService = {
     assign: async (id: number, userId: number): Promise<ApiResponse<LeadResponse>> => {
         const response = await axiosInstance.patch(ENDPOINTS.LEADS.ASSIGN(id), { userId });
         return response.data;
-    }
+    },
+
+    delete: async (id: number): Promise<ApiResponse<void>> => {
+    const response = await axiosInstance.delete(ENDPOINTS.LEADS.BY_ID(id));
+    return response.data;
+},
 };
 
 export default LeadService;

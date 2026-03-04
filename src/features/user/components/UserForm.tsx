@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { UserResponse } from "../dto/response/UserResponse";
+import type { CompanyResponse } from "../../company/dto/response/CompanyResponse";
+import CompanyService from "../../company/service/CompanyService";
+import { defaultPagination } from "../../../common/request/PaginationRequest";
 
 interface Props {
     editing:       UserResponse | null;
@@ -13,7 +16,8 @@ interface Props {
 const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
     const [email,     setEmail]     = useState("");
     const [password,  setPassword]  = useState("");
-    const [companyId, setCompanyId] = useState("");
+    const [companyId, setCompanyId] = useState<number | "">("");
+    const [companies, setCompanies] = useState<CompanyResponse[]>([]);
     const [showPass,  setShowPass]  = useState(false);
     const [loading,   setLoading]   = useState(false);
 
@@ -23,6 +27,15 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
         setCompanyId("");
     }, [editing]);
 
+    // Load companies for dropdown
+    useEffect(() => {
+        if (isSystemAdmin && !editing) {
+            CompanyService.getAll({ ...defaultPagination, size: 100 })
+                .then((res) => setCompanies(res.data))
+                .catch(() => toast.error("Failed to load companies."));
+        }
+    }, [isSystemAdmin, editing]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -30,7 +43,8 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
             await onSubmit({
                 email,
                 password,
-                companyId: isSystemAdmin && !editing ? Number(companyId) : undefined,
+                companyId: isSystemAdmin && !editing && companyId !== ""
+                    ? Number(companyId) : undefined,
             });
             toast.success(editing ? "User updated." : "User created.");
         } catch (err: any) {
@@ -41,116 +55,102 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
     };
 
     return (
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 mb-6">
-            <h3 className="text-white font-semibold text-base mb-5">
-                {editing ? "Edit User" : isSystemAdmin ? "Create Company Admin" : "Create Member"}
-            </h3>
+        <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 
-            <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                {/* Email */}
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-300 text-sm font-medium">
+                        Email <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                        type="email" value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required placeholder="user@company.com"
+                        className="bg-slate-700/50 border border-slate-600 text-white
+                                   placeholder-slate-400 rounded-lg px-3 py-2.5 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500
+                                   focus:border-transparent transition-all"
+                    />
+                </div>
 
-                    {/* Email */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-slate-300 text-sm font-medium">
-                            Email <span className="text-red-400">*</span>
-                        </label>
+                {/* Password */}
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-300 text-sm font-medium">
+                        Password{" "}
+                        {editing
+                            ? <span className="text-slate-500 font-normal text-xs">(blank = keep)</span>
+                            : <span className="text-red-400">*</span>}
+                    </label>
+                    <div className="relative">
                         <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            placeholder="user@company.com"
-                            className="bg-slate-700/50 border border-slate-600 text-white
-                                       placeholder-slate-400 rounded-lg px-3 py-2.5 text-sm
+                            type={showPass ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required={!editing} placeholder="••••••••"
+                            className="w-full bg-slate-700/50 border border-slate-600 text-white
+                                       placeholder-slate-400 rounded-lg px-3 py-2.5 text-sm pr-10
                                        focus:outline-none focus:ring-2 focus:ring-blue-500
                                        focus:border-transparent transition-all"
                         />
-                    </div>
-
-                    {/* Password */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-slate-300 text-sm font-medium">
-                            Password{" "}
-                            {editing
-                                ? <span className="text-slate-500 font-normal">(leave blank to keep)</span>
-                                : <span className="text-red-400">*</span>
-                            }
-                        </label>
-                        <div className="relative">
-                            <input
-                                type={showPass ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required={!editing}
-                                placeholder="••••••••"
-                                className="w-full bg-slate-700/50 border border-slate-600 text-white
-                                           placeholder-slate-400 rounded-lg px-3 py-2.5 text-sm pr-10
-                                           focus:outline-none focus:ring-2 focus:ring-blue-500
-                                           focus:border-transparent transition-all"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPass(!showPass)}
+                        <button type="button" onClick={() => setShowPass(!showPass)}
                                 className="absolute right-3 top-1/2 -translate-y-1/2
-                                           text-slate-400 hover:text-slate-200 transition-colors"
-                            >
-                                {showPass ? <EyeOffIcon /> : <EyeIcon />}
-                            </button>
-                        </div>
+                                           text-slate-400 hover:text-slate-200 transition-colors">
+                            {showPass ? <EyeOffIcon /> : <EyeIcon />}
+                        </button>
                     </div>
-
-                    {/* Company ID — SYSTEM_ADMIN creating only */}
-                    {isSystemAdmin && !editing && (
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-slate-300 text-sm font-medium">
-                                Company ID <span className="text-red-400">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                value={companyId}
-                                onChange={(e) => setCompanyId(e.target.value)}
-                                required
-                                placeholder="e.g. 1"
-                                className="bg-slate-700/50 border border-slate-600 text-white
-                                           placeholder-slate-400 rounded-lg px-3 py-2.5 text-sm
-                                           focus:outline-none focus:ring-2 focus:ring-blue-500
-                                           focus:border-transparent transition-all"
-                            />
-                        </div>
-                    )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <button
-                        type="submit"
-                        disabled={loading}
+                {/* Company Dropdown — SYSTEM_ADMIN creating only */}
+                {isSystemAdmin && !editing && (
+                    <div className="flex flex-col gap-1.5 sm:col-span-2">
+                        <label className="text-slate-300 text-sm font-medium">
+                            Company <span className="text-red-400">*</span>
+                        </label>
+                        <select
+                            value={companyId}
+                            onChange={(e) => setCompanyId(Number(e.target.value))}
+                            required
+                            className="bg-slate-700/50 border border-slate-600 text-white
+                                       rounded-lg px-3 py-2.5 text-sm
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500
+                                       focus:border-transparent transition-all"
+                        >
+                            <option value="">— Select a company —</option>
+                            {companies.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name} (ID: {c.id})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex items-center gap-3 pt-2 border-t border-slate-700">
+                <button type="submit" disabled={loading}
                         className="bg-blue-600 hover:bg-blue-500 disabled:opacity-60
-                                   disabled:cursor-not-allowed text-white text-sm font-medium
-                                   px-5 py-2.5 rounded-lg transition-all flex items-center gap-2"
-                    >
-                        {loading ? (
-                            <>
-                                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" strokeWidth="4"/>
-                                    <path className="opacity-75" fill="currentColor"
-                                          d="M4 12a8 8 0 018-8v8z"/>
-                                </svg>
-                                Saving...
-                            </>
-                        ) : "Save"}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCancel}
+                                   text-white text-sm font-medium px-5 py-2.5 rounded-lg
+                                   transition-all flex items-center gap-2">
+                    {loading ? (
+                        <>
+                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" strokeWidth="4"/>
+                                <path className="opacity-75" fill="currentColor"
+                                      d="M4 12a8 8 0 018-8v8z"/>
+                            </svg>
+                            Saving...
+                        </>
+                    ) : "Save"}
+                </button>
+                <button type="button" onClick={onCancel}
                         className="bg-slate-700 hover:bg-slate-600 text-slate-300
-                                   text-sm font-medium px-5 py-2.5 rounded-lg transition-all"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
+                                   text-sm font-medium px-5 py-2.5 rounded-lg transition-all">
+                    Cancel
+                </button>
+            </div>
+        </form>
     );
 };
 
@@ -164,7 +164,6 @@ const EyeIcon = () => (
                  9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
     </svg>
 );
-
 const EyeOffIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none"
          viewBox="0 0 24 24" stroke="currentColor">

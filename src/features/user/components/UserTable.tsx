@@ -2,6 +2,7 @@ import type { UserResponse } from "../dto/response/UserResponse";
 
 interface Props {
     users:    UserResponse[];
+    onView:   (user: UserResponse) => void;
     onEdit:   (user: UserResponse) => void;
     onDelete: (id: number) => void;
 }
@@ -12,7 +13,7 @@ const ROLE_STYLES: Record<string, string> = {
     USER:          "bg-slate-500/10  text-slate-400  border-slate-500/20",
 };
 
-const UserTable = ({ users, onEdit, onDelete }: Props) => {
+const UserTable = ({ users, onView, onEdit, onDelete }: Props) => {
     if (users.length === 0) {
         return (
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-12
@@ -37,7 +38,9 @@ const UserTable = ({ users, onEdit, onDelete }: Props) => {
                 </thead>
                 <tbody className="divide-y divide-slate-700">
                     {users.map((u) => (
-                        <tr key={u.id} className="hover:bg-slate-700/30 transition-colors">
+                        <tr key={u.id}
+                            onClick={() => onView(u)}
+                            className="hover:bg-slate-700/40 transition-colors cursor-pointer">
                             <td className="px-4 py-3 text-slate-400 text-xs">{u.id}</td>
                             <td className="px-4 py-3 text-white font-medium">{u.email}</td>
                             <td className="px-4 py-3">
@@ -47,35 +50,28 @@ const UserTable = ({ users, onEdit, onDelete }: Props) => {
                                 </span>
                             </td>
                             <td className="px-4 py-3 text-slate-300">
-                                {u.companyName || (
-                                    <span className="text-slate-500 italic">No company</span>
-                                )}
+                                {u.companyName || <span className="text-slate-500 italic">—</span>}
                             </td>
                             <td className="px-4 py-3">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium border
                                     ${u.status === "ACTIVE"
                                         ? "bg-green-500/10 text-green-400 border-green-500/20"
-                                        : "bg-red-500/10 text-red-400 border-red-500/20"
-                                    }`}>
+                                        : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
                                     {u.status}
                                 </span>
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => onEdit(u)}
-                                        className="text-xs bg-blue-500/10 hover:bg-blue-500/20
-                                                   text-blue-400 border border-blue-500/20
-                                                   px-3 py-1.5 rounded-lg transition-all"
-                                    >
+                                    <button onClick={() => onEdit(u)}
+                                            className="text-xs bg-blue-500/10 hover:bg-blue-500/20
+                                                       text-blue-400 border border-blue-500/20
+                                                       px-3 py-1.5 rounded-lg transition-all">
                                         Edit
                                     </button>
-                                    <button
-                                        onClick={() => onDelete(u.id)}
-                                        className="text-xs bg-red-500/10 hover:bg-red-500/20
-                                                   text-red-400 border border-red-500/20
-                                                   px-3 py-1.5 rounded-lg transition-all"
-                                    >
+                                    <button onClick={() => onDelete(u.id)}
+                                            className="text-xs bg-red-500/10 hover:bg-red-500/20
+                                                       text-red-400 border border-red-500/20
+                                                       px-3 py-1.5 rounded-lg transition-all">
                                         Delete
                                     </button>
                                 </div>

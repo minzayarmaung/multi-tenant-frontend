@@ -25,20 +25,20 @@ const UserService = {
     },
 
     // SYSTEM_ADMIN creates COMPANY_ADMIN
-    createCompanyAdmin: async (data: { email: string; password: string; companyId: number })
-        : Promise<ApiResponse<UserResponse>> => {
-        const response = await axiosInstance.post(ENDPOINTS.USERS.BASE, data);
-        return response.data;
+    createCompanyAdmin: async (data: { name: string; email: string; password: string; companyId: number })
+            : Promise<ApiResponse<UserResponse>> => {
+            const response = await axiosInstance.post(ENDPOINTS.USERS.BASE, data);
+            return response.data;
     },
 
     // COMPANY_ADMIN creates USER
-    createMember: async (data: { email: string; password: string })
+    createMember: async (data: { name: string; email: string; password: string })
         : Promise<ApiResponse<UserResponse>> => {
         const response = await axiosInstance.post(ENDPOINTS.USERS.MEMBERS, data);
         return response.data;
     },
 
-    update: async (id: number, data: { email: string; password?: string })
+    update: async (id: number, data: { name: string; email: string; password?: string })
         : Promise<ApiResponse<UserResponse>> => {
         const response = await axiosInstance.patch(ENDPOINTS.USERS.BY_ID(id), data);
         return response.data;

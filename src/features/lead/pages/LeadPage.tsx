@@ -4,23 +4,28 @@ import { toast } from "sonner";
 import { useAuth } from "../../../security/hooks/useAuth";
 import { Role } from "../../../data/enums/Role";
 import { LeadStatus } from "../../../data/enums/LeadStatus";
-import LeadService from "../service/LeadService";
-import LeadForm         from "../components/LeadForm";
-import LeadTable        from "../components/LeadTable";
-import AssignLeadModal  from "../components/AssignLeadModal";
+import LeadService        from "../service/LeadService";
+import LeadForm           from "../components/LeadForm";
+import LeadTable          from "../components/LeadTable";
+import AssignLeadModal    from "../components/AssignLeadModal";
+import Modal              from "../../../common/components/Modal";
+import ViewDetail         from "../../../common/components/ViewDetail";
+import LeadStatusBadge    from "../components/LeadStatusBadge";
 import type { LeadResponse } from "../dto/response/LeadResponse";
 import { defaultPagination } from "../../../common/request/PaginationRequest";
 import Sidebar from "../../dashboard/components/Sidebar";
 
+type ModalMode = "create" | "edit" | "view" | null;
+
 const LeadPage = () => {
-    const { user }                      = useAuth();
-    const [leads,      setLeads]        = useState<LeadResponse[]>([]);
-    const [totalPages, setTotalPages]   = useState(0);
-    const [page,       setPage]         = useState(0);
-    const [loading,    setLoading]      = useState(true);
-    const [showForm,   setShowForm]     = useState(false);
-    const [editing,    setEditing]      = useState<LeadResponse | null>(null);
-    const [assigning,  setAssigning]    = useState<LeadResponse | null>(null);
+    const { user }                    = useAuth();
+    const [leads,      setLeads]      = useState<LeadResponse[]>([]);
+    const [totalPages, setTotalPages] = useState(0);
+    const [page,       setPage]       = useState(0);
+    const [loading,    setLoading]    = useState(true);
+    const [modal,      setModal]      = useState<ModalMode>(null);
+    const [selected,   setSelected]   = useState<LeadResponse | null>(null);
+    const [assigning,  setAssigning]  = useState<LeadResponse | null>(null);
 
     const isCompanyAdmin = user?.role === Role.COMPANY_ADMIN;
     const isUser         = user?.role === Role.USER;
@@ -42,14 +47,14 @@ const LeadPage = () => {
 
     useEffect(() => { fetchLeads(page); }, [page]);
 
-    const handleSubmit = async (data: { name: string; email: string; phone: string }) => {
-        if (editing) {
-            await LeadService.update(editing.id, data);
+    const handleSubmit = async (data: any) => {
+        if (selected && modal === "edit") {
+            await LeadService.update(selected.id, data);
         } else {
             await LeadService.create(data);
         }
-        setShowForm(false);
-        setEditing(null);
+        setModal(null);
+        setSelected(null);
         fetchLeads(page);
     };
 
@@ -69,13 +74,27 @@ const LeadPage = () => {
         fetchLeads(page);
     };
 
+    const handleDelete = async (id: number) => {
+        if (!window.confirm("Delete this lead?")) return;
+        try {
+            await LeadService.delete(id);
+            toast.success("Lead deleted.");
+            fetchLeads(page);
+        } catch {
+            toast.error("Failed to delete lead.");
+        }
+    };
+
+    const openCreate = () => { setSelected(null); setModal("create"); };
+    const openEdit   = (l: LeadResponse) => { setSelected(l); setModal("edit"); };
+    const openView   = (l: LeadResponse) => { setSelected(l); setModal("view"); };
+    const closeModal = () => { setModal(null); setSelected(null); };
+
     return (
         <div className="flex min-h-screen bg-slate-900">
             <Sidebar />
-
             <main className="flex-1 p-8 overflow-y-auto">
 
-                {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-white">
@@ -88,28 +107,16 @@ const LeadPage = () => {
                         </p>
                     </div>
                     {isCompanyAdmin && (
-                        <button
-                            onClick={() => { setShowForm(true); setEditing(null); }}
-                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500
-                                       text-white text-sm font-medium px-4 py-2.5 rounded-lg
-                                       transition-all"
-                        >
+                        <button onClick={openCreate}
+                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500
+                                           text-white text-sm font-medium px-4 py-2.5 rounded-lg
+                                           transition-all">
                             <span className="text-lg leading-none">+</span>
                             Create Lead
                         </button>
                     )}
                 </div>
 
-                {/* Lead Form */}
-                {(showForm || editing) && (
-                    <LeadForm
-                        editing={editing}
-                        onSubmit={handleSubmit}
-                        onCancel={() => { setShowForm(false); setEditing(null); }}
-                    />
-                )}
-
-                {/* Loading */}
                 {loading ? (
                     <div className="flex items-center gap-3 text-slate-400 py-12 justify-center">
                         <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -125,37 +132,33 @@ const LeadPage = () => {
                         <LeadTable
                             leads={leads}
                             isCompanyAdmin={isCompanyAdmin}
-                            onEdit={(lead) => { setEditing(lead); setShowForm(false); }}
+                            onView={openView}
+                            onEdit={openEdit}
                             onAssign={(lead) => setAssigning(lead)}
+                            onDelete={handleDelete}
                             onStatusChange={handleStatusChange}
                         />
-
-                        {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex items-center justify-between mt-6">
                                 <p className="text-slate-400 text-sm">
                                     Page <span className="text-white">{page + 1}</span> of{" "}
                                     <span className="text-white">{totalPages}</span>
                                 </p>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        disabled={page === 0}
-                                        onClick={() => setPage(p => p - 1)}
-                                        className="px-3 py-2 rounded-lg text-sm bg-slate-800
-                                                   border border-slate-700 text-slate-300
-                                                   hover:bg-slate-700 disabled:opacity-40
-                                                   disabled:cursor-not-allowed transition-all"
-                                    >
+                                <div className="flex gap-2">
+                                    <button disabled={page === 0}
+                                            onClick={() => setPage(p => p - 1)}
+                                            className="px-3 py-2 rounded-lg text-sm bg-slate-800
+                                                       border border-slate-700 text-slate-300
+                                                       hover:bg-slate-700 disabled:opacity-40
+                                                       disabled:cursor-not-allowed transition-all">
                                         ← Prev
                                     </button>
-                                    <button
-                                        disabled={page + 1 >= totalPages}
-                                        onClick={() => setPage(p => p + 1)}
-                                        className="px-3 py-2 rounded-lg text-sm bg-slate-800
-                                                   border border-slate-700 text-slate-300
-                                                   hover:bg-slate-700 disabled:opacity-40
-                                                   disabled:cursor-not-allowed transition-all"
-                                    >
+                                    <button disabled={page + 1 >= totalPages}
+                                            onClick={() => setPage(p => p + 1)}
+                                            className="px-3 py-2 rounded-lg text-sm bg-slate-800
+                                                       border border-slate-700 text-slate-300
+                                                       hover:bg-slate-700 disabled:opacity-40
+                                                       disabled:cursor-not-allowed transition-all">
                                         Next →
                                     </button>
                                 </div>
@@ -165,7 +168,62 @@ const LeadPage = () => {
                 )}
             </main>
 
-            {/* Assign Modal — rendered outside table so it overlays correctly */}
+            {/* Create Modal */}
+            {modal === "create" && (
+                <Modal title="Create New Lead" onClose={closeModal}>
+                    <LeadForm editing={null} onSubmit={handleSubmit} onCancel={closeModal} />
+                </Modal>
+            )}
+
+            {/* Edit Modal */}
+            {modal === "edit" && selected && (
+                <Modal title="Edit Lead" subtitle={selected.name} onClose={closeModal}>
+                    <LeadForm editing={selected} onSubmit={handleSubmit} onCancel={closeModal} />
+                </Modal>
+            )}
+
+            {/* View Modal */}
+            {modal === "view" && selected && (
+                <Modal title="Lead Details" subtitle={`ID: ${selected.id}`}
+                       onClose={closeModal} size="lg">
+                    <ViewDetail fields={[
+                        { label: "Name",        value: selected.name },
+                        { label: "Email",       value: selected.email },
+                        { label: "Phone",       value: selected.phone },
+                        { label: "Status",      value: <LeadStatusBadge status={selected.leadStatus} /> },
+                        { label: "Company",     value: selected.companyName },
+                        { label: "Assigned To", value: selected.assignedToEmail },
+                        { label: "Created At",  value: new Date(selected.createdAt).toLocaleString() },
+                        { label: "Updated At",  value: new Date(selected.updatedAt).toLocaleString() },
+                    ]} />
+                    {isCompanyAdmin && (
+                        <div className="flex gap-3 mt-6 pt-4 border-t border-slate-700">
+                            <button onClick={() => setModal("edit")}
+                                    className="bg-blue-600 hover:bg-blue-500 text-white text-sm
+                                               font-medium px-4 py-2 rounded-lg transition-all">
+                                Edit
+                            </button>
+                            <button onClick={() => { setAssigning(selected); closeModal(); }}
+                                    className="bg-purple-600 hover:bg-purple-500 text-white text-sm
+                                               font-medium px-4 py-2 rounded-lg transition-all">
+                                Assign
+                            </button>
+                            <button onClick={() => { handleDelete(selected.id); closeModal(); }}
+                                    className="bg-red-600 hover:bg-red-500 text-white text-sm
+                                               font-medium px-4 py-2 rounded-lg transition-all">
+                                Delete
+                            </button>
+                            <button onClick={closeModal}
+                                    className="bg-slate-700 hover:bg-slate-600 text-slate-300
+                                               text-sm font-medium px-4 py-2 rounded-lg transition-all">
+                                Close
+                            </button>
+                        </div>
+                    )}
+                </Modal>
+            )}
+
+            {/* Assign Modal */}
             {assigning && (
                 <AssignLeadModal
                     leadId={assigning.id}

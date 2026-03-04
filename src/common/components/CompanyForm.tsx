@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import type { CompanyResponse } from "../dto/response/CompanyResponse";
+import type { CompanyResponse } from "../../features/company/dto/response/CompanyResponse";
 
 interface Props {
     initial?: CompanyResponse | null;
