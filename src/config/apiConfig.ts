@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://localhost:8080/multi-tenant-SaaS-management/api/v1";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const ENDPOINTS = {
     // Auth
