@@ -3,6 +3,7 @@ export interface LeadResponse {
     name: string;
     email?: string;
     phone?: string;
+    description: string;
     leadStatus: string;
     companyId: number;
     companyName: string;

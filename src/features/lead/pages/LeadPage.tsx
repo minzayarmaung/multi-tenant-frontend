@@ -190,9 +190,10 @@ const LeadPage = () => {
                         { label: "Name",        value: selected.name },
                         { label: "Email",       value: selected.email },
                         { label: "Phone",       value: selected.phone },
+                        { label: "Description", value: selected.description},
                         { label: "Status",      value: <LeadStatusBadge status={selected.leadStatus} /> },
                         { label: "Company",     value: selected.companyName },
-                        { label: "Assigned To", value: selected.assignedToEmail },
+                        { label: "Assigned To", value: selected.assignedToEmail},
                         { label: "Created At",  value: new Date(selected.createdAt).toLocaleString() },
                         { label: "Updated At",  value: new Date(selected.updatedAt).toLocaleString() },
                     ]} />

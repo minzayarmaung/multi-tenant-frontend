@@ -5,12 +5,12 @@ import type { LeadResponse } from "../dto/response/LeadResponse";
 
 interface Props {
     editing:  LeadResponse | null;
-    onSubmit: (data: { name: string; email: string; phone: string }) => Promise<void>;
+    onSubmit: (data: { name: string; email: string; phone: string , description: string }) => Promise<void>;
     onCancel: () => void;
 }
 
 const LeadForm = ({ editing, onSubmit, onCancel }: Props) => {
-    const [values,  setValues]  = useState({ name: "", email: "", phone: "" });
+    const [values,  setValues]  = useState({ name: "", email: "", phone: "" , description: ""});
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -18,6 +18,7 @@ const LeadForm = ({ editing, onSubmit, onCancel }: Props) => {
             name:  editing?.name  || "",
             email: editing?.email || "",
             phone: editing?.phone || "",
+            description: editing?.description || ""
         });
     }, [editing]);
 
@@ -38,6 +39,7 @@ const LeadForm = ({ editing, onSubmit, onCancel }: Props) => {
         { label: "Name",  key: "name",  type: "text",  required: true  },
         { label: "Email", key: "email", type: "email", required: false },
         { label: "Phone", key: "phone", type: "text",  required: false },
+        { label: "Description" , key: "description" , type: "text" , required: false}
     ] as const;
 
     return (
@@ -46,10 +48,11 @@ const LeadForm = ({ editing, onSubmit, onCancel }: Props) => {
                 {editing ? "Edit Lead" : "Create New Lead"}
             </h3>
 
-            <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
                     {fields.map(({ label, key, type, required }) => (
-                        <div key={key} className="flex flex-col gap-1.5">
+                        // Conditional class for wide description field
+                        <div key={key} className={`flex flex-col gap-1.5 ${key === 'description' ? 'sm:col-span-3' : ''}`}>
                             <label className="text-slate-300 text-sm font-medium">
                                 {label}
                                 {required && <span className="text-red-400 ml-1">*</span>}

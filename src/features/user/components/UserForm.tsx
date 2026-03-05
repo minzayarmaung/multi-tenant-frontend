@@ -9,11 +9,12 @@ import { defaultPagination } from "../../../common/request/PaginationRequest";
 interface Props {
     editing:       UserResponse | null;
     isSystemAdmin: boolean;
-    onSubmit: (data: { email: string; password: string; companyId?: number }) => Promise<void>;
+    onSubmit: (data: {name: string; email: string; password: string; companyId?: number }) => Promise<void>;
     onCancel: () => void;
 }
 
 const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
+    const [name,      setName]      = useState("");
     const [email,     setEmail]     = useState("");
     const [password,  setPassword]  = useState("");
     const [companyId, setCompanyId] = useState<number | "">("");
@@ -22,6 +23,7 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
     const [loading,   setLoading]   = useState(false);
 
     useEffect(() => {
+        setName(editing?.name || "");
         setEmail(editing?.email || "");
         setPassword("");
         setCompanyId("");
@@ -41,6 +43,7 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
         setLoading(true);
         try {
             await onSubmit({
+                name,
                 email,
                 password,
                 companyId: isSystemAdmin && !editing && companyId !== ""
@@ -57,6 +60,22 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
     return (
         <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+                {/* Email */}
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-300 text-sm font-medium">
+                        Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                        type="name" value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required placeholder="Mr.David"
+                        className="bg-slate-700/50 border border-slate-600 text-white
+                                   placeholder-slate-400 rounded-lg px-3 py-2.5 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500
+                                   focus:border-transparent transition-all"
+                    />
+                </div>
 
                 {/* Email */}
                 <div className="flex flex-col gap-1.5">

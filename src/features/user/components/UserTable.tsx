@@ -28,7 +28,7 @@ const UserTable = ({ users, onView, onEdit, onDelete }: Props) => {
             <table className="w-full text-sm">
                 <thead>
                     <tr className="border-b border-slate-700 bg-slate-700/50">
-                        {["ID", "Email", "Role", "Company", "Status", "Actions"].map((h) => (
+                        {["ID", "Name" , "Email", "Role", "Company", "Status", "Actions"].map((h) => (
                             <th key={h} className="text-left text-slate-400 font-medium
                                                    px-4 py-3 text-xs uppercase tracking-wider">
                                 {h}
@@ -42,6 +42,7 @@ const UserTable = ({ users, onView, onEdit, onDelete }: Props) => {
                             onClick={() => onView(u)}
                             className="hover:bg-slate-700/40 transition-colors cursor-pointer">
                             <td className="px-4 py-3 text-slate-400 text-xs">{u.id}</td>
+                            <td className="px-4 py-3 text-slate-400 text-xs">{u.name}</td>
                             <td className="px-4 py-3 text-white font-medium">{u.email}</td>
                             <td className="px-4 py-3">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium

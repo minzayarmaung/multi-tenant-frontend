@@ -19,7 +19,7 @@ const STATUS_SELECT_STYLES: Record<string, string> = {
     CONVERTED: "bg-amber-500/10  text-amber-400  border-amber-500/30",
 };
 
-const LeadTable = ({ leads, isCompanyAdmin, onView, onEdit, onAssign,
+const LeadTable = ({ leads = [], isCompanyAdmin, onView, onEdit, onAssign,
                      onDelete, onStatusChange }: Props) => {
     if (leads.length === 0) {
         return (
@@ -36,7 +36,7 @@ const LeadTable = ({ leads, isCompanyAdmin, onView, onEdit, onAssign,
             <table className="w-full text-sm">
                 <thead>
                     <tr className="border-b border-slate-700 bg-slate-700/50">
-                        {["ID", "Name", "Email", "Phone", "Status", "Assigned To", "Actions"]
+                        {["ID", "Name", "Email", "Phone", "Description" , "Status", "Assigned To", "Actions"]
                             .map((h) => (
                                 <th key={h} className="text-left text-slate-400 font-medium
                                                        px-4 py-3 text-xs uppercase tracking-wider">
@@ -55,6 +55,7 @@ const LeadTable = ({ leads, isCompanyAdmin, onView, onEdit, onAssign,
                             <td className="px-4 py-3 text-white font-medium">{lead.name}</td>
                             <td className="px-4 py-3 text-slate-300">{lead.email || "-"}</td>
                             <td className="px-4 py-3 text-slate-300">{lead.phone || "-"}</td>
+                            <td className="px-4 py-3 text-slate-300">{lead.description || "-"}</td>
 
                             {/* Status dropdown — stop row click */}
                             <td className="px-4 py-3"

@@ -175,6 +175,7 @@ const UserPage = () => {
             {modal === "view" && selected && (
                 <Modal title="User Details" subtitle={`ID: ${selected.id}`} onClose={closeModal} size="lg">
                     <ViewDetail fields={[
+                        { label: "Name" ,      value: selected.name},
                         { label: "Email",      value: selected.email },
                         { label: "Role",       value: selected.role },
                         { label: "Company",    value: selected.companyName },
