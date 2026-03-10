@@ -3,11 +3,12 @@ import { Role } from "../../data/enums/Role";
 import axiosInstance from "../../config/axiosConfig";
 import { ENDPOINTS } from "../../config/apiConfig";
 import type { User } from "../../data/models/User";
+import type { ApiResponse } from "../../common/response/ApiResponse";
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
-    login: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<ApiResponse<User>>;
     logout: () => Promise<void>;
     isAuthenticated: boolean;
     hasRole: (role: Role) => boolean;
@@ -34,11 +35,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
     }, []);
 
-    const login = async (email: string, password: string): Promise<void> => {
-        const response = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, { email, password });
-        const userData: User = response.data.data;
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData)); // persist across refresh
+    const login = async (email: string, password: string): Promise<ApiResponse<User>> => {
+        const response = await axiosInstance.post<ApiResponse<User>>(
+            ENDPOINTS.AUTH.LOGIN,
+            { email, password }
+        );
+
+        const res = response.data;
+
+        if (res.success === 1 && res.data) {
+            setUser(res.data);
+            localStorage.setItem("user", JSON.stringify(res.data));
+        }
+
+        return res;
     };
 
     const logout = async (): Promise<void> => {

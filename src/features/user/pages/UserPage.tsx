@@ -69,12 +69,15 @@ const UserPage = () => {
 
     const handleDelete = async (id: number) => {
         if (!window.confirm("Delete this user?")) return;
+
         try {
-            await UserService.delete(id);
-            toast.success("User deleted.");
-            fetchUsers(page);
-        } catch {
-            toast.error("Failed to delete.");
+            const res = await UserService.delete(id);
+            toast[res.success ? "success" : "error"](res.message);
+
+            if (res.success) fetchUsers(page);
+
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message ?? "Failed to delete.");
         }
     };
 

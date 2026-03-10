@@ -16,12 +16,19 @@ const LoginForm = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+
         try {
-            await login(email, password);
-            toast.success("Welcome back!");
-            navigate("/dashboard");
+            const res = await login(email, password);
+
+            if (res.success === 1) {
+                toast.success(res.message || "Welcome back!");
+                navigate("/dashboard");
+            } else {
+                toast.error(res.message); // banned / invalid / other backend messages
+            }
+
         } catch (err: any) {
-            toast.error(err.response?.data?.message || "Invalid credentials.");
+            toast.error(err?.response?.data?.message || "Invalid credentials.");
         } finally {
             setLoading(false);
         }
