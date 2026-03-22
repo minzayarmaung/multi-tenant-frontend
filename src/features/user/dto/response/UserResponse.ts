@@ -1,8 +1,10 @@
+import type { Role } from "../../../../data/enums/Role";
+
 export interface UserResponse {
     id: number;
     name: string;
     email: string;
-    role: string;
+    role: Role;
     status: string;
     companyId?: number;
     companyName?: string;

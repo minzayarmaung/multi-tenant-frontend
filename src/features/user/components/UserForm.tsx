@@ -5,11 +5,12 @@ import type { UserResponse } from "../dto/response/UserResponse";
 import type { CompanyResponse } from "../../company/dto/response/CompanyResponse";
 import CompanyService from "../../company/service/CompanyService";
 import { defaultPagination } from "../../../common/request/PaginationRequest";
+import { Role } from "../../../data/enums/Role";
 
 interface Props {
     editing:       UserResponse | null;
     isSystemAdmin: boolean;
-    onSubmit: (data: {name: string; email: string; password: string; companyId?: number }) => Promise<void>;
+    onSubmit: (data: {name: string; email: string; password: string; role: Role , companyId?: number }) => Promise<void>;
     onCancel: () => void;
 }
 
@@ -17,6 +18,7 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
     const [name,      setName]      = useState("");
     const [email,     setEmail]     = useState("");
     const [password,  setPassword]  = useState("");
+    const [role,      setRole]      = useState<Role>(Role.USER);
     const [companyId, setCompanyId] = useState<number | "">("");
     const [companies, setCompanies] = useState<CompanyResponse[]>([]);
     const [showPass,  setShowPass]  = useState(false);
@@ -25,6 +27,7 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
     useEffect(() => {
         setName(editing?.name || "");
         setEmail(editing?.email || "");
+        setRole(editing?.role || Role.USER);
         setPassword("");
         setCompanyId("");
     }, [editing]);
@@ -46,6 +49,7 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
                 name,
                 email,
                 password,
+                role,
                 companyId: isSystemAdmin && !editing && companyId !== ""
                     ? Number(companyId) : undefined,
             });
@@ -61,7 +65,7 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
         <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 
-                {/* Email */}
+                {/* Name */}
                 <div className="flex flex-col gap-1.5">
                     <label className="text-slate-300 text-sm font-medium">
                         Name <span className="text-red-400">*</span>
@@ -118,6 +122,28 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
                             {showPass ? <EyeOffIcon /> : <EyeIcon />}
                         </button>
                     </div>
+                </div>
+
+                {/* Role Dropdown */}
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-300 text-sm font-medium">
+                        Role <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value as Role)}
+                        required
+                        className="bg-slate-700/50 border border-slate-600 text-white
+                                   rounded-lg px-3 py-2.5 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500
+                                   focus:border-transparent transition-all"
+                    >
+                        {Object.values(Role).map((r) => (
+                            <option key={r} value={r}>
+                                {r.replace("_", " ")}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Company Dropdown — SYSTEM_ADMIN creating only */}

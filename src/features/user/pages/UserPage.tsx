@@ -61,6 +61,7 @@ const UserPage = () => {
             await UserService.createMember({
                 name: data.name,
                 email: data.email,
+                role: data.role,
                 password: data.password,
             });
         }

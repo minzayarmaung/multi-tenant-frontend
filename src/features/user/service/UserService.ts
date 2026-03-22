@@ -4,6 +4,7 @@ import type { ApiResponse } from "../../../common/response/ApiResponse";
 import type { PaginatedApiResponse } from "../../../common/response/PaginatedApiResponse";
 import type { PaginationRequest } from "../../../common/request/PaginationRequest";
 import type { UserResponse } from "../dto/response/UserResponse";
+import type { Role } from "../../../data/enums/Role";
 
 const UserService = {
 
@@ -32,7 +33,7 @@ const UserService = {
     },
 
     // COMPANY_ADMIN creates USER
-    createMember: async (data: { name: string; email: string; password: string })
+    createMember: async (data: { name: string; email: string; role: Role; password: string })
         : Promise<ApiResponse<UserResponse>> => {
         const response = await axiosInstance.post(ENDPOINTS.USERS.MEMBERS, data);
         return response.data;
