@@ -24,6 +24,8 @@ const UserPage = () => {
     const [selected,   setSelected]   = useState<UserResponse | null>(null);
 
     const isSystemAdmin = user?.role === Role.SYSTEM_ADMIN;
+    const isCompanyAdmin = user?.role === Role.COMPANY_ADMIN;
+    const isHR = user?.role === Role.HR;
 
     const fetchUsers = async (p = 0) => {
         setLoading(true);
@@ -109,6 +111,7 @@ const UserPage = () => {
                                 : "Manage members in your company"}
                         </p>
                     </div>
+                    {!isHR && ( 
                     <button onClick={openCreate}
                             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500
                                        text-white text-sm font-medium px-4 py-2.5 rounded-lg
@@ -116,6 +119,7 @@ const UserPage = () => {
                         <span className="text-lg leading-none">+</span>
                         {isSystemAdmin ? "Create Admin" : "Create Member"}
                     </button>
+                    )}
                 </div>
 
                 {loading ? (
@@ -135,6 +139,7 @@ const UserPage = () => {
                             onView={openView}
                             onEdit={openEdit}
                             onDelete={openDelete} // Pass openDelete instead of handleDelete
+                            readonly = {isHR}
                         />
                         {/* Pagination... */}
                         {totalPages > 1 && (
@@ -171,14 +176,14 @@ const UserPage = () => {
             {modal === "create" && (
                 <Modal title={isSystemAdmin ? "Create Company Admin" : "Create Member"}
                        onClose={closeModal}>
-                    <UserForm editing={null} isSystemAdmin={isSystemAdmin}
+                    <UserForm editing={null} isSystemAdmin={isSystemAdmin} isCompanyAdmin={isCompanyAdmin}
                               onSubmit={handleSubmit} onCancel={closeModal} />
                 </Modal>
             )}
 
             {modal === "edit" && selected && (
                 <Modal title="Edit User" subtitle={selected.email} onClose={closeModal}>
-                    <UserForm editing={selected} isSystemAdmin={isSystemAdmin}
+                    <UserForm editing={selected} isSystemAdmin={isSystemAdmin} isCompanyAdmin={isCompanyAdmin}
                               onSubmit={handleSubmit} onCancel={closeModal} />
                 </Modal>
             )}

@@ -10,11 +10,12 @@ import { Role } from "../../../data/enums/Role";
 interface Props {
     editing:       UserResponse | null;
     isSystemAdmin: boolean;
+    isCompanyAdmin: boolean;
     onSubmit: (data: {name: string; email: string; password: string; role: Role , companyId?: number }) => Promise<void>;
     onCancel: () => void;
 }
 
-const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
+const UserForm = ({ editing, isSystemAdmin, isCompanyAdmin, onSubmit, onCancel }: Props) => {
     const [name,      setName]      = useState("");
     const [email,     setEmail]     = useState("");
     const [password,  setPassword]  = useState("");
@@ -125,6 +126,7 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
                 </div>
 
                 {/* Role Dropdown */}
+                {isCompanyAdmin && (
                 <div className="flex flex-col gap-1.5">
                     <label className="text-slate-300 text-sm font-medium">
                         Role <span className="text-red-400">*</span>
@@ -142,9 +144,10 @@ const UserForm = ({ editing, isSystemAdmin, onSubmit, onCancel }: Props) => {
                             <option key={r} value={r}>
                                 {r.replace("_", " ")}
                             </option>
-                        ))}
+                ))}
                     </select>
                 </div>
+                )}
 
                 {/* Company Dropdown — SYSTEM_ADMIN creating only */}
                 {isSystemAdmin && !editing && (

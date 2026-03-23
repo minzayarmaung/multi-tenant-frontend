@@ -18,7 +18,7 @@ const AppRouter = () => {
 
                 {/* All authenticated roles */}
                 <Route path="/dashboard" element={
-                    <ProtectedRoute allowedRoles={[Role.SYSTEM_ADMIN, Role.COMPANY_ADMIN, Role.USER]}>
+                    <ProtectedRoute allowedRoles={[Role.SYSTEM_ADMIN, Role.COMPANY_ADMIN, Role.USER , Role.HR]}>
                         <DashboardPage />
                     </ProtectedRoute>
                 }/>
@@ -32,14 +32,14 @@ const AppRouter = () => {
 
                 {/* SYSTEM_ADMIN + COMPANY_ADMIN */}
                 <Route path="/users" element={
-                    <ProtectedRoute allowedRoles={[Role.SYSTEM_ADMIN, Role.COMPANY_ADMIN]}>
+                    <ProtectedRoute allowedRoles={[Role.SYSTEM_ADMIN, Role.COMPANY_ADMIN , Role.HR]}>
                         <UserPage />
                     </ProtectedRoute>
                 }/>
 
                 {/* COMPANY_ADMIN + USER */}
                 <Route path="/leads" element={
-                    <ProtectedRoute allowedRoles={[Role.COMPANY_ADMIN, Role.USER]}>
+                    <ProtectedRoute allowedRoles={[Role.COMPANY_ADMIN, Role.USER , Role.HR]}>
                         <LeadPage />
                     </ProtectedRoute>
                 }/>

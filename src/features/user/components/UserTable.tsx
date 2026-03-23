@@ -5,15 +5,17 @@ interface Props {
     onView:   (user: UserResponse) => void;
     onEdit:   (user: UserResponse) => void;
     onDelete: (id: number) => void;
+    readonly?: boolean;
 }
 
 const ROLE_STYLES: Record<string, string> = {
     SYSTEM_ADMIN:  "bg-purple-500/10 text-purple-400 border-purple-500/20",
     COMPANY_ADMIN: "bg-blue-500/10   text-blue-400   border-blue-500/20",
     USER:          "bg-slate-500/10  text-slate-400  border-slate-500/20",
+    HR:            "bg-red-500/10 text-slate-400 border-slate-500/20"
 };
 
-const UserTable = ({ users, onView, onEdit, onDelete }: Props) => {
+const UserTable = ({ users, onView, onEdit, onDelete , readonly }: Props) => {
     if (users.length === 0) {
         return (
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-12
@@ -28,8 +30,8 @@ const UserTable = ({ users, onView, onEdit, onDelete }: Props) => {
             <table className="w-full text-sm">
                 <thead>
                     <tr className="border-b border-slate-700 bg-slate-700/50">
-                        {["ID", "Name" , "Email", "Role", "Company", "Status", "Actions"].map((h) => (
-                            <th key={h} className="text-left text-slate-400 font-medium
+                        {["ID", "Name" , "Email", "Role", "Company", "Status", !readonly && "Actions"].map((h) => (
+                            <th key={h as string} className="text-left text-slate-400 font-medium
                                                    px-4 py-3 text-xs uppercase tracking-wider">
                                 {h}
                             </th>
@@ -61,6 +63,7 @@ const UserTable = ({ users, onView, onEdit, onDelete }: Props) => {
                                     {u.status}
                                 </span>
                             </td>
+                            {!readonly && ( 
                             <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex items-center gap-2">
                                     <button onClick={() => onEdit(u)}
@@ -77,6 +80,7 @@ const UserTable = ({ users, onView, onEdit, onDelete }: Props) => {
                                     </button>
                                 </div>
                             </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>

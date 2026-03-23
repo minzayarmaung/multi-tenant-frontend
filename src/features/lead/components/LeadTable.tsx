@@ -11,6 +11,8 @@ interface Props {
     onStatusChange: (id: number, status: LeadStatus) => void;
 }
 
+    const isHR = user?.role === Role.HR;
+
 const STATUS_SELECT_STYLES: Record<string, string> = {
     NEW:       "bg-blue-500/10   text-blue-400   border-blue-500/30",
     CONTACTED: "bg-purple-500/10 text-purple-400 border-purple-500/30",
@@ -58,6 +60,7 @@ const LeadTable = ({ leads = [], isCompanyAdmin, onView, onEdit, onAssign,
                             <td className="px-4 py-3 text-slate-300">{lead.description || "-"}</td>
 
                             {/* Status dropdown — stop row click */}
+                            {!isHR && ( 
                             <td className="px-4 py-3"
                                 onClick={(e) => e.stopPropagation()}>
                                 <select
@@ -75,7 +78,7 @@ const LeadTable = ({ leads = [], isCompanyAdmin, onView, onEdit, onAssign,
                                     ))}
                                 </select>
                             </td>
-
+                            )}
                             <td className="px-4 py-3">
                                 {lead.assignedToEmail ? (
                                     <span className="text-slate-300 text-xs">
